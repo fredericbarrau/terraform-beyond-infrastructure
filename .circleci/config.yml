@@ -1,0 +1,83 @@
+version: 2.1
+
+orbs:
+  training-material: zenika/training-material@volatile
+  training-resource: zenika-training/training-resource@volatile
+  ztraining2strigo: zenika-training/ztraining2strigo@volatile
+
+parameters:
+  force-update:
+    description: Force an update on manually triggered pipelines
+    type: boolean
+    default: false
+
+workflows:
+  version: 2
+
+  build-and-deploy:
+    when:
+      not:
+        or:
+          - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+          - << pipeline.parameters.force-update >>
+    jobs:
+      - training-material/build:
+          name: Build training materials
+      - training-material/deploy:
+          name: Deploy training materials on https://training-material.zenika.com/
+          requires:
+            - Build training materials
+          filters:
+            branches:
+              only:
+                - main
+          context: training-deploy-zenika
+      - ztraining2strigo/check:
+          name: Check update class on Strigo
+          requires:
+            - Build training materials
+          context: strigo-api
+
+  build-and-update:
+    when:
+      or:
+        - and:
+            - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+            - equal: [ "Weekly Deploy", << pipeline.schedule.name >> ]
+        - and:
+            - equal: [ api, << pipeline.trigger_source >> ]  # 'api' is the value for manual trigger through API or UI
+            - << pipeline.parameters.force-update >>
+    jobs:
+      - training-material/build:
+          name: Build training materials
+      - ztraining2strigo/update:
+          name: Update class on Strigo
+          requires:
+            - Build training materials
+          context: strigo-api
+      - training-resource/publish:
+          name: Publish Slides on Drive
+          requires:
+            - Build training materials
+          source: dist/pdf/Zenika-training-template-Slides.pdf
+          file-id: 1Xmqn8NoORSK1HMvRt-5lI3YBs-KH-Nqy
+          context: training-deploy-zenika
+      - training-resource/publish:
+          name: Publish Workbook on Drive
+          requires:
+            - Build training materials
+          source: dist/pdf/Zenika-training-template-Workbook.pdf
+          file-id: 1zBNHOr-oj8Kf8IPVs2zCwmnPaWsr6PkV
+          context: training-deploy-zenika
+      - training-resource/publish:
+          name: Publish workspace on Drive
+          source: Exercises/workspaces
+          file-id: 1mGy8Es4me3hIhvwBmH0FJDtoVAf9id2A
+          compression-mode: zip
+          context: training-deploy-zenika
+      - training-resource/publish:
+          name: Publish solutions on Drive
+          source: Exercises/solutions
+          file-id: 164pZKL7YGAfR8aQ4zTQW_Ow9x87AYQH-
+          compression-mode: zip
+          context: training-deploy-zenika

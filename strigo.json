@@ -1,0 +1,85 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Zenika-Training/ztraining2strigo/main/strigo.schema.json",
+  "name": "training-template",
+  "id": "6194eae3f73b8211206bbcc4",
+  "description": [
+    "Automatic update from https://github.com/Zenika-Training/training-template"
+  ],
+  "presentations": [
+    {
+      "file": "pdf/Zenika-training-template-Slides.pdf",
+      "notes_source": "Slides/slides.json"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Linux Terminal",
+      "instance_type": "t3.medium",
+      "image": "ubuntu-20.04",
+      "init_scripts": [
+        {
+          "script": "ubuntu-20.04-apt-lock-fix.sh"
+        },
+        {
+          "script": "strigo.sh"
+        },
+        {
+          "script": "tls-certificate.sh",
+          "env": {
+            "ZEROSSL_EAB_KID": "d3GmAeDzGx3v9UI3ZUgOlQ",
+            "ZEROSSL_EAB_HMAC_KEY": "Nn90w7WR3RUjsrdlB0IJnes94SWhcuAyvndk0YPczKw7dJDS4esHz42Ng4tM4kEDQzaBzccNLyKqc4WD9xb_EQ"
+          }
+        },
+        {
+          "script": "code-server.sh",
+          "env": {
+            "code_server_tls_key_path": "${TLS_PRIVKEY}",
+            "code_server_tls_cert_path": "${TLS_FULLCHAIN}",
+            "code_server_settings": "{\"telemetry.enableTelemetry\": false, \"files.exclude\": { \"**/.*\": true }}"
+          }
+        },
+        {
+          "script": "http-server.sh"
+        },
+        {
+          "script": "materials-helper.sh"
+        },
+        "Installation/strigo/get-materials.sh"
+      ],
+      "post_launch_scripts": [],
+      "webview_links": [
+        {
+          "name": "Code-server",
+          "url": "https://instance.autolab.strigo.io:9999?folder=/home/ubuntu"
+        },
+        {
+          "name": "Materials",
+          "url": "http://instance.autolab.strigo.io:9997"
+        }
+      ]
+    },
+    {
+      "name": "Windows Desktop",
+      "instance_type": "t3.medium",
+      "image": "windows-server-2016",
+      "is_windows": true,
+      "init_scripts": [
+        {
+          "script": "strigo.ps1"
+        },
+        {
+          "script": "keyboard.ps1"
+        },
+        "Installation/strigo/win_get-materials.ps1",
+        {
+          "script": "chocolatey.ps1"
+        },
+        {
+          "script": "vscode.ps1"
+        }
+      ],
+      "post_launch_scripts": [],
+      "webview_links": []
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+---
+# Cf. http://help.strigo.io/en/articles/4951906-fetching-lab-exercises-from-github
+
+classes:
+  - exercises:
+      - title: Pré-requis
+        file: ../Workbook/Workbook.md
+
+      - title: Installation
+        file: ../Workbook/Practical_Works_1.md
+      - title: Configuration
+        file: ../Workbook/Practical_Works_1.md
